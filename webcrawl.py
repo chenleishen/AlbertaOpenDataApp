@@ -4,12 +4,18 @@ import sqlite3
 from bs4 import BeautifulSoup
 import re
 
+def findCSV(soup):
+	distribution = soup.find("div", {"class" : "fieldgroup group-ds-distribution"})
+	if (distribution != None):
+		for tag in distribution.findAll('a', href=True):
+			tag['href'] = urlparse.urljoin(url,tag['href'])
+			if re.search("\.csv$", tag['href']):
+				#print tag['href']
+				break
 
-url = "http://data.alberta.ca/data"
-#url = "http://data.alberta.ca/data/agricultural-processing-industry-directory"
-
-urls = [url] #stack of urls to scrape
-visited = [url] #historic record of urls
+rootPage = "http://data.alberta.ca/data"
+urls = [rootPage]
+visited = [rootPage]
 
 while len(urls) > 0:
 	url = urls.pop(0)
@@ -19,14 +25,13 @@ while len(urls) > 0:
 		print url
 
 	soup = BeautifulSoup(htmltext)
+	findCSV(soup)
 
 	for tag in soup.findAll('a', href=True):
-		tag['href'] = urlparse.urljoin(url,tag['href'])
-		if re.search("\.csv$", tag['href']):
-			print tag['href']
-			break
-		if url in tag['href'] and tag['href'] not in visited:
+		tag['href'] = urlparse.urljoin(rootPage, tag['href'])
+		if rootPage in tag['href'] and tag['href'] not in visited:
 			urls.append(tag['href'])
 			visited.append(tag['href'])
 
 #print visited
+
